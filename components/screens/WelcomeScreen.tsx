@@ -1,6 +1,7 @@
 import { GameButton } from '@/components/ui/GameButton';
 import { UserProfileModal } from '@/components/ui/UserProfileModal';
 import { Config } from '@/constants/Config';
+import { DeviceTokenManager } from '@/utils/DeviceTokenManager';
 import { User, UserService } from '@/utils/UserService';
 import React, { useEffect, useRef, useState } from 'react';
 import {
@@ -59,35 +60,52 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
   const initializeUser = async () => {
     try {
       setUserLoading(true);
+      
+      // Check if we have a device token in storage
+      const hasToken = await DeviceTokenManager.hasDeviceToken();
+      console.log('📱 Device token exists in storage:', hasToken);
+      
+      // Try to get existing user from API
       const existingUser = await UserService.getCurrentUser();
       
       if (existingUser) {
+        console.log('✅ User found, setting user state');
         setUser(existingUser);
       } else {
-        // No user found, need to create profile
+        console.log('⚠️ No user found, need to create profile');
+        // Generate and save device token for new user
+        await DeviceTokenManager.getDeviceToken();
         setIsNewUser(true);
         setShowProfileModal(true);
       }
     } catch (error) {
-      console.error('Error initializing user:', error);
+      console.error('❌ Error initializing user:', error);
       // Still allow the user to proceed, they can create profile later
     } finally {
       setUserLoading(false);
     }
   };
 
-  const handleUserSaved = (savedUser: User) => {
+  const handleUserSaved = async (savedUser: User) => {
+    console.log('✅ User profile saved successfully:', savedUser);
+    
+    // Ensure device token is saved to local storage
+    await DeviceTokenManager.saveDeviceToken(savedUser.device_token);
+    
     setUser(savedUser);
     setIsNewUser(false);
     setShowProfileModal(false);
   };
 
   const handleProfilePress = () => {
+    setIsNewUser(false); // Editing existing user
     setShowProfileModal(true);
   };
 
-  const handleStart = () => {
+  const handleStart = async () => {
     if (!user) {
+      // Generate device token for new user
+      await DeviceTokenManager.getDeviceToken();
       setIsNewUser(true);
       setShowProfileModal(true);
       return;
@@ -98,23 +116,23 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
   return (
     <View style={styles.container}>
       {/* User Profile Icon */}
-              {user && !userLoading && (
-          <View style={styles.userIconContainer}>
-            <TouchableOpacity 
-              style={[styles.userIcon, {
-                width: isTablet ? 50 : 45,
-                height: isTablet ? 50 : 45,
-                borderRadius: isTablet ? 25 : 22.5,
-              }]}
-              onPress={handleProfilePress}
-              activeOpacity={0.7}
-            >
-              <Text style={[styles.userIconText, {
-                fontSize: isTablet ? 24 : 20,
-              }]}>👤</Text>
-            </TouchableOpacity>
-          </View>
-        )}
+      {user && !userLoading && (
+        <View style={styles.userIconContainer}>
+          <TouchableOpacity 
+            style={[styles.userIcon, {
+              width: isTablet ? 50 : 45,
+              height: isTablet ? 50 : 45,
+              borderRadius: isTablet ? 25 : 22.5,
+            }]}
+            onPress={handleProfilePress}
+            activeOpacity={0.7}
+          >
+            <Text style={[styles.userIconText, {
+              fontSize: isTablet ? 24 : 20,
+            }]}>👤</Text>
+          </TouchableOpacity>
+        </View>
+      )}
 
       <View style={styles.background}>
         {/* Animated circles for decoration */}
@@ -172,22 +190,22 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
         </Text>
 
         {/* User Greeting */}
-                  {user && (
-            <View style={[styles.greetingContainer, {
-              marginBottom: isTablet ? 20 : isSmallScreen ? 10 : 15,
+        {user && (
+          <View style={[styles.greetingContainer, {
+            marginBottom: isTablet ? 20 : isSmallScreen ? 10 : 15,
+          }]}>
+            <Text style={[styles.greetingText, {
+              fontSize: isTablet ? 18 : isSmallScreen ? 14 : 16,
             }]}>
-              <Text style={[styles.greetingText, {
-                fontSize: isTablet ? 18 : isSmallScreen ? 14 : 16,
-              }]}>
-                Halo, {user.name}! 👋
-              </Text>
-              <Text style={[styles.classText, {
-                fontSize: isTablet ? 14 : isSmallScreen ? 11 : 12,
-              }]}>
-                Kelas {user.class}
-              </Text>
-            </View>
-          )}
+              Halo, {user.name}! 👋
+            </Text>
+            <Text style={[styles.classText, {
+              fontSize: isTablet ? 14 : isSmallScreen ? 11 : 12,
+            }]}>
+              Kelas {user.class}
+            </Text>
+          </View>
+        )}
 
         {/* Start Button */}
         <View style={styles.buttonContainer}>

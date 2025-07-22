@@ -59,8 +59,10 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
       let savedUser: User;
 
       if (isNewUser || !user?.id) {
-        // Create new user
-        const deviceToken = UserService.getDeviceToken();
+        // Create new user - await the async getDeviceToken method
+        const deviceToken = await UserService.getDeviceToken();
+        console.log('📱 Using device token for new user:', deviceToken);
+        
         savedUser = await UserService.createUser({
           device_token: deviceToken,
           name: name.trim(),

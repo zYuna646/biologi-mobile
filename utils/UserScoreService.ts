@@ -27,16 +27,11 @@ export class UserScoreService {
   // Fetch user scores history by device token
   static async getUserScoresHistory(): Promise<UserScoreDetails | null> {
     try {
-      // Get current user's device token
-      const currentUser = await UserService.getCurrentUser();
-      if (!currentUser) {
-        console.warn('⚠️ No user found');
-        return null;
-      }
+      // Get current user's device token from UserService
+      const deviceToken = await UserService.getDeviceToken();
+      console.log('📊 Fetching user scores history for device token:', deviceToken);
 
-      console.log('📊 Fetching user scores history...');
-
-      const response = await fetch(`${this.API_BASE}/users/device/${currentUser.device_token}`, {
+      const response = await fetch(`${this.API_BASE}/users/device/${deviceToken}`, {
         method: 'GET',
         headers: {
           'accept': '*/*',
