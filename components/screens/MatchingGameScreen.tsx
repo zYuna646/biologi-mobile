@@ -2,12 +2,15 @@ import { GameButton } from '@/components/ui/GameButton';
 import { SimpleMatchCard } from '@/components/ui/SimpleMatchCard';
 import { Config } from '@/constants/Config';
 import { Card, GAME_ITEMS, GAME_SETTINGS } from '@/constants/GameData';
+import { ScoreService } from '@/utils/ScoreService';
 import { soundManager } from '@/utils/SoundManager';
+import { UserService } from '@/utils/UserService';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
     Alert,
     Animated,
     Dimensions,
+    Modal,
     SafeAreaView,
     ScrollView,
     StyleSheet,
@@ -43,6 +46,8 @@ export const MatchingGameScreen: React.FC<MatchingGameScreenProps> = ({
     amount: 0,
     isPositive: true
   });
+  const [showExitWarning, setShowExitWarning] = useState(false);
+  const [isSavingScore, setIsSavingScore] = useState(false);
 
   const isSmallScreen = width < 700;
   const isTablet = width > 900;
@@ -390,10 +395,13 @@ export const MatchingGameScreen: React.FC<MatchingGameScreenProps> = ({
     await soundManager.stopBackgroundMusic();
     await soundManager.playSound('gameComplete', 0.8);
     
+    // Save score to API
+    await saveScoreToAPI(gameScore);
+    
     setTimeout(() => {
       Alert.alert(
         'Game Selesai! 🎉',
-        `Skor Akhir: ${gameScore}\nLevel Tercapai: ${level}\nTotal Pasangan: ${totalMatches}\nKombo Tertinggi: ${combo}`,
+        `Skor Akhir: ${gameScore}\nLevel Tercapai: ${level}\nTotal Pasangan: ${totalMatches}\nKombo Tertinggi: ${combo}\n\n✅ Skor telah disimpan!`,
         [
           { text: 'Main Lagi', onPress: initializeGame },
           { text: 'Kembali', onPress: () => onGameComplete(gameScore) }
@@ -401,6 +409,59 @@ export const MatchingGameScreen: React.FC<MatchingGameScreenProps> = ({
       );
     }, 500);
   }, [score, level, totalMatches, combo, initializeGame, onGameComplete]);
+
+  // Save score to API
+  const saveScoreToAPI = useCallback(async (finalScore: number) => {
+    try {
+      setIsSavingScore(true);
+      
+      // Get current user
+      const currentUser = await UserService.getCurrentUser();
+      if (!currentUser || !currentUser.id) {
+        console.warn('⚠️ No user found, cannot save score');
+        return;
+      }
+
+      // Create score data
+      const scoreData = ScoreService.createScoreData(finalScore, level, currentUser.id);
+      
+      // Post score to API
+      const result = await ScoreService.postScore(scoreData);
+      
+      if (result) {
+        console.log('✅ Score saved successfully to API');
+      } else {
+        console.warn('⚠️ Failed to save score to API');
+      }
+      
+    } catch (error) {
+      console.error('❌ Error saving score:', error);
+    } finally {
+      setIsSavingScore(false);
+    }
+  }, [level]);
+
+  // Handle back button with warning if game is in progress
+  const handleBack = useCallback(() => {
+    if (gameStarted && !gameEnded) {
+      // Game is in progress, show warning
+      setShowExitWarning(true);
+    } else {
+      // Game not started or already ended, safe to go back
+      onBack();
+    }
+  }, [gameStarted, gameEnded, onBack]);
+
+  // Handle exit game without saving
+  const handleExitWithoutSaving = useCallback(() => {
+    setShowExitWarning(false);
+    onBack();
+  }, [onBack]);
+
+  // Handle continue game
+  const handleContinueGame = useCallback(() => {
+    setShowExitWarning(false);
+  }, []);
 
 
 
@@ -435,7 +496,7 @@ export const MatchingGameScreen: React.FC<MatchingGameScreenProps> = ({
           <View style={styles.headerLeft}>
             <GameButton
               title="◀"
-              onPress={onBack}
+              onPress={handleBack}
               variant="secondary"
               size="small"
             />
@@ -576,6 +637,73 @@ export const MatchingGameScreen: React.FC<MatchingGameScreenProps> = ({
               ))}
             </View>
           </ScrollView>
+        )}
+
+        {/* Exit Warning Modal */}
+        <Modal
+          visible={showExitWarning}
+          transparent={true}
+          animationType="fade"
+          onRequestClose={handleContinueGame}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={[styles.modalContainer, {
+              width: isTablet ? '60%' : '85%',
+              padding: isTablet ? 30 : 20,
+            }]}>
+              <Text style={[styles.modalTitle, {
+                fontSize: isTablet ? 24 : 20,
+              }]}>
+                ⚠️ Peringatan!
+              </Text>
+              
+              <Text style={[styles.modalMessage, {
+                fontSize: isTablet ? 16 : 14,
+              }]}>
+                Game sedang berlangsung. Jika Anda keluar sekarang, skor tidak akan tersimpan dan progress akan hilang.
+                {'\n\n'}Apakah Anda yakin ingin keluar?
+              </Text>
+              
+              <View style={styles.modalButtons}>
+                <TouchableOpacity 
+                  style={[styles.modalButton, styles.continueButton, {
+                    paddingVertical: isTablet ? 15 : 12,
+                    paddingHorizontal: isTablet ? 25 : 20,
+                  }]}
+                  onPress={handleContinueGame}
+                >
+                  <Text style={[styles.continueButtonText, {
+                    fontSize: isTablet ? 16 : 14,
+                  }]}>
+                    🎮 Lanjut Main
+                  </Text>
+                </TouchableOpacity>
+                
+                <TouchableOpacity 
+                  style={[styles.modalButton, styles.exitButton, {
+                    paddingVertical: isTablet ? 15 : 12,
+                    paddingHorizontal: isTablet ? 25 : 20,
+                  }]}
+                  onPress={handleExitWithoutSaving}
+                >
+                  <Text style={[styles.exitButtonText, {
+                    fontSize: isTablet ? 16 : 14,
+                  }]}>
+                    🚪 Keluar
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
+
+        {/* Saving Score Indicator */}
+        {isSavingScore && (
+          <View style={styles.savingOverlay}>
+            <View style={styles.savingContainer}>
+              <Text style={styles.savingText}>💾 Menyimpan skor...</Text>
+            </View>
+          </View>
         )}
       </SafeAreaView>
     </Animated.View>
@@ -725,5 +853,78 @@ const styles = StyleSheet.create({
   cardContainer: {
     paddingHorizontal: 2,
     paddingVertical: 2,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContainer: {
+    backgroundColor: Config.GAME_THEME.CARD_BACKGROUND,
+    borderRadius: 20,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+    elevation: 10,
+  },
+  modalTitle: {
+    fontWeight: 'bold',
+    color: '#FF5722',
+    textAlign: 'center',
+    marginBottom: 15,
+  },
+  modalMessage: {
+    color: Config.GAME_THEME.TEXT_PRIMARY,
+    textAlign: 'center',
+    lineHeight: 22,
+    marginBottom: 25,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    gap: 15,
+  },
+  modalButton: {
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flex: 1,
+  },
+  continueButton: {
+    backgroundColor: Config.GAME_THEME.PRIMARY_COLOR,
+  },
+  exitButton: {
+    backgroundColor: '#FF5722',
+  },
+  continueButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+  },
+  exitButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+  },
+  savingOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  savingContainer: {
+    backgroundColor: Config.GAME_THEME.CARD_BACKGROUND,
+    borderRadius: 15,
+    padding: 20,
+    alignItems: 'center',
+  },
+  savingText: {
+    color: Config.GAME_THEME.TEXT_PRIMARY,
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 }); 

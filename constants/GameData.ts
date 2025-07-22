@@ -47,8 +47,8 @@ export interface Card {
 }
 
 export const GAME_SETTINGS = {
-  INITIAL_TIME: 180, // 3 minutes
-  POINTS_PER_MATCH: 100,
-  TIME_BONUS_MULTIPLIER: 2,
-  PENALTY_WRONG_MATCH: 10,
+  INITIAL_TIME: 75, // 1 minute 15 seconds
+  POINTS_PER_MATCH: 50,
+  TIME_BONUS_MULTIPLIER: 5,
+  PENALTY_WRONG_MATCH: 25,
 }; 

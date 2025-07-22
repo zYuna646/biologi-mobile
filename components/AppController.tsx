@@ -1,6 +1,7 @@
 import { MateriItem } from '@/constants/MateriData';
 import React, { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
+import { LeaderboardScreen } from './screens/LeaderboardScreen';
 import { MatchingGameScreen } from './screens/MatchingGameScreen';
 import { MateriDetailScreen } from './screens/MateriDetailScreen';
 import { MateriScreen } from './screens/MateriScreen';
@@ -37,9 +38,6 @@ export const AppController: React.FC = () => {
         break;
       case 'leaderboard':
         setCurrentScreen('leaderboard');
-        // TODO: Navigate to leaderboard screen
-        console.log('Navigating to Leaderboard');
-        setTimeout(() => setCurrentScreen('menu'), 1000);
         break;
       default:
         console.log('Unknown menu:', menuId);
@@ -100,11 +98,10 @@ export const AppController: React.FC = () => {
           />
         );
       case 'leaderboard':
-        // Placeholder for future screens
         return (
-          <View style={styles.placeholder}>
-            {/* Placeholder for future content */}
-          </View>
+          <LeaderboardScreen
+            onBack={handleBackToMenu}
+          />
         );
       default:
         return <WelcomeScreen onStart={handleStart} />;
