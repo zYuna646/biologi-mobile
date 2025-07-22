@@ -1,7 +1,7 @@
 export const Config = {
   APP_NAME: 'Biologi Edukasi - Reproduksi',
   APP_VERSION: '1.0.0',
-  API_URL: 'https://4e495c5b60c9.ngrok-free.app',
+  API_URL: 'https://biologi.zyuna646.tech',
   GAME_THEME: {
     PRIMARY_COLOR: '#4CAF50', // Green for biology theme
     SECONDARY_COLOR: '#8BC34A', // Light green
