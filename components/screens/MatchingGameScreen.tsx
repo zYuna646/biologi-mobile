@@ -1,3 +1,4 @@
+import { UserScoreHistoryModal } from '@/components/screens/UserScoreHistoryModal';
 import { GameButton } from '@/components/ui/GameButton';
 import { SimpleMatchCard } from '@/components/ui/SimpleMatchCard';
 import { Config } from '@/constants/Config';
@@ -48,6 +49,7 @@ export const MatchingGameScreen: React.FC<MatchingGameScreenProps> = ({
   });
   const [showExitWarning, setShowExitWarning] = useState(false);
   const [isSavingScore, setIsSavingScore] = useState(false);
+  const [showScoreHistory, setShowScoreHistory] = useState(false);
 
   const isSmallScreen = width < 700;
   const isTablet = width > 900;
@@ -503,6 +505,12 @@ export const MatchingGameScreen: React.FC<MatchingGameScreenProps> = ({
             <TouchableOpacity onPress={toggleMute} style={styles.muteButton}>
               <Text style={styles.muteIcon}>{isMuted ? '🔇' : '🔊'}</Text>
             </TouchableOpacity>
+            <TouchableOpacity 
+              onPress={() => setShowScoreHistory(true)} 
+              style={styles.historyButton}
+            >
+              <Text style={styles.historyIcon}>📊</Text>
+            </TouchableOpacity>
           </View>
           
           <View style={styles.headerCenter}>
@@ -705,6 +713,12 @@ export const MatchingGameScreen: React.FC<MatchingGameScreenProps> = ({
             </View>
           </View>
         )}
+
+        {/* User Score History Modal */}
+        <UserScoreHistoryModal 
+          visible={showScoreHistory}
+          onClose={() => setShowScoreHistory(false)}
+        />
       </SafeAreaView>
     </Animated.View>
   );
@@ -741,6 +755,15 @@ const styles = StyleSheet.create({
     backgroundColor: Config.GAME_THEME.BACKGROUND,
   },
   muteIcon: {
+    fontSize: 20,
+  },
+  historyButton: {
+    padding: 8,
+    borderRadius: 20,
+    backgroundColor: Config.GAME_THEME.BACKGROUND,
+    marginLeft: 10,
+  },
+  historyIcon: {
     fontSize: 20,
   },
   headerCenter: {
