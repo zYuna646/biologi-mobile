@@ -3,7 +3,7 @@
     "name": "biologi-edukasi",
     "slug": "biologi-edukasi",
     "version": "1.0.0",
-    "orientation": "portrait",
+    "orientation": "landscape",
     "icon": "./assets/images/icon.png",
     "scheme": "biologiedukasi",
     "userInterfaceStyle": "automatic",

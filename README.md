@@ -1,50 +1,137 @@
-# Welcome to your Expo app 👋
+# 🌱 Biologi Edukasi - Reproduksi
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Game edukasi biologi yang dirancang khusus untuk anak-anak Sekolah Dasar (SD) dengan fokus pada materi reproduksi makhluk hidup.
 
-## Get started
+## ✨ Fitur Utama
 
-1. Install dependencies
+### 🎮 Game Interaktif
+- Tampilan menarik dengan tema hijau alami
+- Animasi smooth dan responsif
+- Interface yang ramah anak
 
+### 📚 Materi Lengkap
+- **Perkembangbiakan Tumbuhan** - Cara tumbuhan berkembang biak
+- **Perkembangbiakan Hewan** - Proses reproduksi hewan
+- **Siklus Hidup** - Metamorfosis dan pertumbuhan
+- **Organ Reproduksi** - Pengenalan organ reproduksi
+- **Kuis & Permainan** - Uji pemahaman dengan games
+- **Ensiklopedia Mini** - Kamus istilah biologi
+
+### 🎨 Desain untuk Anak
+- Warna-warna cerah dan menarik
+- Emoji dan ikon yang fun
+- Layout sederhana dan mudah dipahami
+- Orientasi landscape untuk pengalaman optimal
+
+## 🚀 Cara Menjalankan
+
+1. **Install Dependencies**
    ```bash
    npm install
    ```
 
-2. Start the app
-
+2. **Jalankan Aplikasi**
    ```bash
    npx expo start
    ```
 
-In the output, you'll find options to open the app in a
+3. **Buka di Device**
+   - Scan QR code dengan Expo Go app
+   - Jalankan di Android/iOS emulator
+   - Buka di web browser
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+## 🏗️ Struktur Project
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+```
+biologi-edukasi/
+├── app/                          # App routing
+│   ├── (tabs)/
+│   │   ├── _layout.tsx          # Tab navigation
+│   │   └── index.tsx            # Home screen
+│   └── _layout.tsx              # Root layout
+├── components/
+│   ├── screens/                 # Screen components
+│   │   ├── WelcomeScreen.tsx    # Welcome/splash screen
+│   │   └── MenuScreen.tsx       # Main menu
+│   ├── ui/                      # UI components
+│   │   ├── GameButton.tsx       # Custom button
+│   │   └── GameCard.tsx         # Menu cards
+│   └── AppController.tsx        # Main app controller
+├── constants/
+│   ├── Config.ts               # App configuration
+│   └── Colors.ts               # Color themes
+└── assets/                     # Images and fonts
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## 🎯 Komponen Utama
 
-## Learn more
+### AppController
+Mengelola navigasi dan state management aplikasi.
 
-To learn more about developing your project with Expo, look at the following resources:
+### WelcomeScreen
+- Splash screen dengan animasi menarik
+- Informasi fitur aplikasi
+- Button untuk memulai
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+### MenuScreen
+- Grid layout untuk menu topik
+- Fun facts section
+- Header dan footer informatif
 
-## Join the community
+### UI Components
+- **GameButton**: Button dengan berbagai style dan animasi
+- **GameCard**: Card component untuk menu items
 
-Join our community of developers creating universal apps.
+## 🎨 Theme & Styling
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+Aplikasi menggunakan tema hijau yang sesuai dengan topik biologi:
+- **Primary**: `#4CAF50` (Green)
+- **Secondary**: `#8BC34A` (Light Green)
+- **Accent**: `#FF9800` (Orange)
+- **Background**: `#E8F5E8` (Very Light Green)
+
+## 📱 Orientasi
+
+Aplikasi dikonfigurasi untuk **landscape mode only** agar memberikan pengalaman viewing yang optimal untuk anak-anak.
+
+## 🔧 Konfigurasi
+
+### app.json
+```json
+{
+  "orientation": "landscape"
+}
+```
+
+### Config.ts
+```typescript
+export const Config = {
+  APP_NAME: 'Biologi Edukasi - Reproduksi',
+  APP_VERSION: '1.0.0',
+  GAME_THEME: { ... }
+}
+```
+
+## 🎓 Target Audience
+
+Dirancang khusus untuk:
+- Anak-anak Sekolah Dasar (7-12 tahun)
+- Pembelajaran biologi dasar
+- Materi reproduksi makhluk hidup
+
+## 🔮 Roadmap
+
+- [ ] Implementasi content screens untuk setiap topik
+- [ ] Mini games interaktif
+- [ ] Sistem progress tracking
+- [ ] Audio narration
+- [ ] Offline support
+- [ ] Animations dan micro-interactions
+
+## 🤝 Contributing
+
+Kontribusi sangat diterima! Silakan buat pull request atau buka issue untuk saran dan perbaikan.
+
+## 📄 License
+
+MIT License - Lihat file LICENSE untuk detail lengkap.

@@ -1,0 +1,12 @@
+# Placeholder untuk Audio Files
+
+Ganti file ini dengan audio files yang sebenarnya:
+
+1. bgm.mp3 - Background music
+2. card-flip.mp3 - Sound effect kartu dibuka  
+3. card-match.mp3 - Sound effect match benar
+4. card-wrong.mp3 - Sound effect match salah
+5. game-complete.mp3 - Sound effect level selesai
+6. tick.mp3 - Sound effect warning waktu
+
+Lihat README.md di folder ini untuk referensi download links. 
