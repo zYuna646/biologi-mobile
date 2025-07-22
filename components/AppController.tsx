@@ -1,21 +1,26 @@
+import { MateriItem } from '@/constants/MateriData';
 import React, { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { MatchingGameScreen } from './screens/MatchingGameScreen';
+import { MateriDetailScreen } from './screens/MateriDetailScreen';
+import { MateriScreen } from './screens/MateriScreen';
 import { MenuScreen } from './screens/MenuScreen';
 import { WelcomeScreen } from './screens/WelcomeScreen';
 
-type AppState = 'welcome' | 'menu' | 'game' | 'materi' | 'leaderboard';
+type AppState = 'welcome' | 'menu' | 'game' | 'materi' | 'materi-detail' | 'leaderboard';
 
 export const AppController: React.FC = () => {
   const [currentScreen, setCurrentScreen] = useState<AppState>('welcome');
-  const [gameScore, setGameScore] = useState<number>(0);  
-
-  const handleStart = () => {
-    setCurrentScreen('menu');
-  };
+  const [selectedTopic, setSelectedTopic] = useState<string>('');
+  const [gameScore, setGameScore] = useState<number>(0);
+  const [selectedMateri, setSelectedMateri] = useState<MateriItem | null>(null);
 
   const handleBackToWelcome = () => {
     setCurrentScreen('welcome');
+  };
+
+  const handleStart = () => {
+    setCurrentScreen('menu');
   };
 
   const handleBackToMenu = () => {
@@ -29,9 +34,6 @@ export const AppController: React.FC = () => {
         break;
       case 'materi':
         setCurrentScreen('materi');
-        // TODO: Navigate to materi screen
-        console.log('Navigating to Materi');
-        setTimeout(() => setCurrentScreen('menu'), 1000);
         break;
       case 'leaderboard':
         setCurrentScreen('leaderboard');
@@ -48,6 +50,16 @@ export const AppController: React.FC = () => {
     setGameScore(score);
     setCurrentScreen('menu');
     // TODO: Save score to leaderboard
+  };
+
+  const handleMateriSelect = (materi: MateriItem) => {
+    setSelectedMateri(materi);
+    setCurrentScreen('materi-detail');
+  };
+
+  const handleBackFromMateriDetail = () => {
+    setSelectedMateri(null);
+    setCurrentScreen('materi');
   };
 
   const renderCurrentScreen = () => {
@@ -69,6 +81,24 @@ export const AppController: React.FC = () => {
           />
         );
       case 'materi':
+        return (
+          <MateriScreen
+            onBack={handleBackToMenu}
+            onMateriSelect={handleMateriSelect}
+          />
+        );
+      case 'materi-detail':
+        return selectedMateri ? (
+          <MateriDetailScreen
+            materi={selectedMateri}
+            onBack={handleBackFromMateriDetail}
+          />
+        ) : (
+          <MateriScreen
+            onBack={handleBackToMenu}
+            onMateriSelect={handleMateriSelect}
+          />
+        );
       case 'leaderboard':
         // Placeholder for future screens
         return (
@@ -81,7 +111,11 @@ export const AppController: React.FC = () => {
     }
   };
 
-  return <View style={styles.container}>{renderCurrentScreen()}</View>;
+  return (
+    <View style={styles.container}>
+      {renderCurrentScreen()}
+    </View>
+  );
 };
 
 const styles = StyleSheet.create({
