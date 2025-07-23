@@ -2,13 +2,13 @@ import { GameButton } from '@/components/ui/GameButton';
 import { Config } from '@/constants/Config';
 import React from 'react';
 import {
-    Dimensions,
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Dimensions,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 
 interface MenuScreenProps {
@@ -28,6 +28,11 @@ const menuItems = [
     id: 'materi',
     title: 'Materi',
     icon: '📚',
+  },
+  {
+    id: 'assessment',
+    title: 'Assessment',
+    icon: '📝',
   },
   {
     id: 'leaderboard',
@@ -143,6 +148,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 20,
     width: '100%',
+    flexWrap: 'wrap',
+    gap: 10,
   },
   menuItem: {
     alignItems: 'center',

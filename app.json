@@ -7,27 +7,19 @@
     "icon": "./assets/images/icon.png",
     "scheme": "biologiedukasi",
     "userInterfaceStyle": "automatic",
-    "splash": {
-      "image": "./assets/images/splash-icon.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
-    },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "newArchEnabled": true,
     "ios": {
       "supportsTablet": true
     },
     "android": {
-      "package": "com.biologiedukasi.app",
-      "versionCode": 1,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
       "permissions": [
-        "INTERNET"
-      ]
+        "INTERNET",
+      ],
+      "package": "com.zychan.biologiedukasi"
     },
     "web": {
       "bundler": "metro",
