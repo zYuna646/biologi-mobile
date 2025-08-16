@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "Biologi Edukasi",
-    "slug": "biologi-edukasi",
+    "name": "BIOREKA - Biologi Reproduksi dan Edukasi Kesehatan",
+    "slug": "bioreka",
     "version": "1.0.0",
     "orientation": "landscape",
     "icon": "./assets/images/icon.png",
-    "scheme": "biologiedukasi",
+    "scheme": "bioreka",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
@@ -17,9 +17,9 @@
         "backgroundColor": "#ffffff"
       },
       "permissions": [
-        "INTERNET",
+        "INTERNET"
       ],
-      "package": "com.zychan.biologiedukasi"
+      "package": "com.zychan.bioreka"
     },
     "web": {
       "bundler": "metro",
@@ -44,7 +44,7 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "0ff84c0c-e4ac-4817-bfa1-067fe4548ac4"
+        "projectId": "033536b5-0286-496d-9a6c-e19eeecbaa31"
       }
     }
   }

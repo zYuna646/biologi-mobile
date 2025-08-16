@@ -2,22 +2,22 @@ import { UserScoreHistoryModal } from '@/components/screens/UserScoreHistoryModa
 import { GameButton } from '@/components/ui/GameButton';
 import { SimpleMatchCard } from '@/components/ui/SimpleMatchCard';
 import { Config } from '@/constants/Config';
-import { Card, GAME_ITEMS, GAME_SETTINGS } from '@/constants/GameData';
+import { Card, GAME_ITEMS, GAME_LEVELS, GAME_SETTINGS } from '@/constants/GameData';
 import { ScoreService } from '@/utils/ScoreService';
 import { soundManager } from '@/utils/SoundManager';
 import { UserService } from '@/utils/UserService';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
-    Alert,
-    Animated,
-    Dimensions,
-    Modal,
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Alert,
+  Animated,
+  Dimensions,
+  Modal,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 
 interface MatchingGameScreenProps {
@@ -99,38 +99,46 @@ export const MatchingGameScreen: React.FC<MatchingGameScreenProps> = ({
   const generateLevelCards = useCallback((currentLevel: number) => {
     const gameCards: Card[] = [];
     
-    // For higher levels, add more items or repeat items with different functions
-    const itemsToUse = [...GAME_ITEMS];
+    // Get level configuration or fallback to all items
+    const levelConfig = GAME_LEVELS[currentLevel as keyof typeof GAME_LEVELS];
+    let itemsToUse: typeof GAME_ITEMS = [];
     
-    // Add more challenge for higher levels by including more pairs
-    if (currentLevel > 1) {
-      // Add extra items or create variations
-      const extraItems = GAME_ITEMS.slice(0, Math.min(currentLevel - 1, 2));
-      itemsToUse.push(...extraItems);
+    if (levelConfig && levelConfig.items) {
+      // Use specific items for this level
+      itemsToUse = GAME_ITEMS.filter(item => levelConfig.items.includes(item.id));
+    } else {
+      // Fallback: use more items as level increases
+      const itemCount = Math.min(5 + (currentLevel - 1) * 2, GAME_ITEMS.length);
+      itemsToUse = GAME_ITEMS.slice(0, itemCount);
     }
     
-    // Create image cards with unique content IDs for duplicates
+    // Ensure we have at least some items
+    if (itemsToUse.length === 0) {
+      itemsToUse = GAME_ITEMS.slice(0, 5);
+    }
+    
+    // Create image cards
     itemsToUse.forEach((item, index) => {
       gameCards.push({
         id: `image_${item.id}_${currentLevel}_${index}`,
         type: 'image',
         content: {
           ...item,
-          id: `${item.id}_${currentLevel}_${index}`, // Make content ID unique for duplicates
+          id: `${item.id}_${currentLevel}_${index}`,
         },
         isMatched: false,
         isSelected: false,
       });
     });
 
-    // Create function cards with matching unique content IDs
+    // Create function cards
     itemsToUse.forEach((item, index) => {
       gameCards.push({
         id: `function_${item.id}_${currentLevel}_${index}`,
         type: 'function',
         content: {
           ...item,
-          id: `${item.id}_${currentLevel}_${index}`, // Same unique ID as matching image
+          id: `${item.id}_${currentLevel}_${index}`,
         },
         isMatched: false,
         isSelected: false,
@@ -368,25 +376,58 @@ export const MatchingGameScreen: React.FC<MatchingGameScreenProps> = ({
   // Start next level automatically
   const startNextLevel = useCallback(async (currentScore: number) => {
     const nextLevel = level + 1;
+    
+    // Check if we've reached the maximum level
+    if (nextLevel > GAME_SETTINGS.MAX_LEVELS) {
+      // Game completed successfully
+      setGameEnded(true);
+      await soundManager.stopBackgroundMusic();
+      await soundManager.playSound('gameComplete', 0.8);
+      
+      // Save final score
+      await saveScoreToAPI(currentScore);
+      
+      setTimeout(() => {
+        Alert.alert(
+          'Selamat! 🎉',
+          `Anda telah menyelesaikan semua level!\n\nSkor Akhir: ${currentScore}\nLevel Selesai: ${level}\nTotal Pasangan: ${totalMatches}\nKombo Tertinggi: ${combo}\n\n✅ Skor telah disimpan!`,
+          [
+            { text: 'Main Lagi', onPress: initializeGame },
+            { text: 'Kembali', onPress: () => onGameComplete(currentScore) }
+          ]
+        );
+      }, 500);
+      return;
+    }
+    
     setLevel(nextLevel);
     
     // Play level complete sound
     await soundManager.playSound('gameComplete', 0.6);
     
-    // Small delay to show completion, then auto-continue
+    // Get level configuration for time bonus
+    const levelConfig = GAME_LEVELS[nextLevel as keyof typeof GAME_LEVELS];
+    const timeBonus = levelConfig?.timeBonus || 20;
+    
+    // Show level transition message
     setTimeout(() => {
-      // Generate new cards for next level
-      const newCards = generateLevelCards(nextLevel);
-      setCards(newCards);
-      setSelectedCards([]);
-      setMatchedPairs(new Set());
-      setCombo(0);
-      
-      // Add time bonus for completing level
-      const timeBonus = 30;
-      setTimeRemaining(prev => prev + timeBonus);
+      Alert.alert(
+        `Level ${nextLevel} 🎯`,
+        `${levelConfig?.name || `Level ${nextLevel}`}\n\n${levelConfig?.description || `Level ${nextLevel}`}\n\n+${timeBonus} detik bonus waktu!`,
+        [{ text: 'Lanjut!', onPress: () => {
+          // Generate new cards for next level
+          const newCards = generateLevelCards(nextLevel);
+          setCards(newCards);
+          setSelectedCards([]);
+          setMatchedPairs(new Set());
+          setCombo(0);
+          
+          // Add time bonus for completing level
+          setTimeRemaining(prev => prev + timeBonus);
+        }}]
+      );
     }, 800);
-  }, [level, generateLevelCards]);
+  }, [level, generateLevelCards, totalMatches, combo, initializeGame, onGameComplete]);
 
   // End game completely (when time runs out or player chooses to quit)
   const endGameCompletely = useCallback(async (finalScore?: number) => {
@@ -614,7 +655,8 @@ export const MatchingGameScreen: React.FC<MatchingGameScreenProps> = ({
           <View style={styles.startContainer}>
             <Text style={styles.instructionText}>
               🎯 Cocokkan gambar organ dengan fungsinya untuk mendapatkan poin!
-              {'\n\n'}✨ Semakin cepat mencocokkan, semakin besar bonus waktu!
+              {'\n\n'}✨ Mulai dari level 1 dengan organ dasar pria
+              {'\n\n'}📈 Setiap level memiliki organ berbeda yang lebih menantang
               {'\n\n'}🔥 Cocokkan berturut-turut untuk combo multiplier!
             </Text>
             <GameButton
@@ -625,26 +667,30 @@ export const MatchingGameScreen: React.FC<MatchingGameScreenProps> = ({
             />
           </View>
         ) : (
-          <ScrollView style={styles.gameArea} contentContainerStyle={styles.cardsContainer}>
-            <View style={[styles.cardsGrid, {
-              paddingHorizontal: isTablet ? 15 : isSmallScreen ? 8 : 12,
-              paddingVertical: 10,
-            }]}>
-              {cards.map((card) => (
-                <View 
-                  key={card.id} 
-                  style={[styles.cardContainer, {
-                    width: `${100 / getColumnsCount()}%`,
-                  }]}
-                >
-                  <SimpleMatchCard
-                    card={card}
-                    onPress={handleCardPress}
-                  />
-                </View>
-              ))}
-            </View>
-          </ScrollView>
+          <View style={styles.gameContentContainer}>
+            {/* Level Info Banner */}
+          
+            <ScrollView style={styles.gameArea} contentContainerStyle={styles.cardsContainer}>
+              <View style={[styles.cardsGrid, {
+                paddingHorizontal: isTablet ? 15 : isSmallScreen ? 8 : 12,
+                paddingVertical: 10,
+              }]}>
+                {cards.map((card) => (
+                  <View 
+                    key={card.id} 
+                    style={[styles.cardContainer, {
+                      width: `${100 / getColumnsCount()}%`,
+                    }]}
+                  >
+                    <SimpleMatchCard
+                      card={card}
+                      onPress={handleCardPress}
+                    />
+                  </View>
+                ))}
+              </View>
+            </ScrollView>
+          </View>
         )}
 
         {/* Exit Warning Modal */}
@@ -782,7 +828,6 @@ const styles = StyleSheet.create({
   timeText: {
     fontWeight: 'bold',
   },
-
   scoreContainer: {
     alignItems: 'center',
   },
@@ -855,6 +900,33 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 30,
     lineHeight: 24,
+  },
+  gameContentContainer: {
+    flex: 1,
+  },
+  levelBanner: {
+    backgroundColor: Config.GAME_THEME.ACCENT_COLOR,
+    borderRadius: 15,
+    padding: 15,
+    marginHorizontal: 15,
+    marginVertical: 10,
+    alignItems: 'center',
+    shadowColor: Config.GAME_THEME.SHADOW_COLOR,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  levelBannerText: {
+    fontWeight: 'bold',
+    color: 'white',
+    textAlign: 'center',
+    marginBottom: 5,
+  },
+  levelDescriptionText: {
+    color: 'white',
+    textAlign: 'center',
+    lineHeight: 16,
   },
   gameArea: {
     flex: 1,

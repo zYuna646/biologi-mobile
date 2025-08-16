@@ -186,7 +186,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
           fontSize: isTablet ? 24 : isSmallScreen ? 16 : 20,
           marginBottom: isTablet ? 40 : isSmallScreen ? 25 : 35,
         }]}>
-          Belajar Biologi dengan Cara yang Menyenangkan!
+          {Config.APP_DESCRIPTION}
         </Text>
 
         {/* User Greeting */}

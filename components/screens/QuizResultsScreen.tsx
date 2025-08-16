@@ -2,8 +2,10 @@ import { GameButton } from '@/components/ui/GameButton';
 import { QuestionCard } from '@/components/ui/QuestionCard';
 import { Config } from '@/constants/Config';
 import { QuizSession } from '@/utils/QuizService';
+import * as WebBrowser from 'expo-web-browser';
 import React, { useState } from 'react';
 import {
+    Alert,
     Dimensions,
     SafeAreaView,
     ScrollView,
@@ -27,6 +29,7 @@ export const QuizResultsScreen: React.FC<QuizResultsScreenProps> = ({
 }) => {
   const [showReview, setShowReview] = useState(false);
   const [reviewQuestionIndex, setReviewQuestionIndex] = useState(0);
+  const [isDownloadingPDF, setIsDownloadingPDF] = useState(false);
 
   const isSmallScreen = width < 700;
   const isTablet = width > 900;
@@ -62,6 +65,38 @@ export const QuizResultsScreen: React.FC<QuizResultsScreenProps> = ({
     if (score >= 70) return 'Cukup baik. Masih ada ruang untuk perbaikan.';
     if (score >= 60) return 'Perlu belajar lebih giat lagi.';
     return 'Sebaiknya pelajari materi lebih dalam lagi.';
+  };
+
+  const handleDownloadPDF = async () => {
+    try {
+      setIsDownloadingPDF(true);
+      
+      // Construct the PDF download URL
+      const pdfUrl = `${Config.API_URL}/quiz/download-pdf/${quizSession.id}`;
+      
+      // Open the PDF in the browser for download
+      const result = await WebBrowser.openBrowserAsync(pdfUrl, {
+        presentationStyle: WebBrowser.WebBrowserPresentationStyle.FULL_SCREEN,
+        showTitle: true,
+        toolbarColor: Config.GAME_THEME.PRIMARY_COLOR,
+      });
+      
+      if (result.type === 'cancel') {
+        console.log('PDF download cancelled by user');
+      } else {
+        console.log('PDF download initiated successfully');
+      }
+      
+    } catch (error) {
+      console.error('Error downloading PDF:', error);
+      Alert.alert(
+        'Error',
+        'Gagal mengunduh PDF. Silakan coba lagi.',
+        [{ text: 'OK' }]
+      );
+    } finally {
+      setIsDownloadingPDF(false);
+    }
   };
 
   const correctAnswers = quizSession.correct_answers || 0;
@@ -369,6 +404,15 @@ export const QuizResultsScreen: React.FC<QuizResultsScreenProps> = ({
             variant="secondary"
             size={isTablet ? "large" : "medium"}
             icon={<Text style={styles.buttonIcon}>👁️</Text>}
+          />
+
+          <GameButton
+            title={isDownloadingPDF ? "📥 Mengunduh..." : "📄 Download PDF"}
+            onPress={handleDownloadPDF}
+            variant="secondary"
+            size={isTablet ? "large" : "medium"}
+            icon={<Text style={styles.buttonIcon}>📄</Text>}
+            disabled={isDownloadingPDF}
           />
 
           <GameButton

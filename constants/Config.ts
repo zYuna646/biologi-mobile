@@ -1,8 +1,9 @@
 export const Config = {
-  APP_NAME: 'Biologi Edukasi - Reproduksi',
+  APP_NAME: 'BIOREKA',
+  APP_DESCRIPTION: 'Belajar Biologi dengan Cara yang Menyenangkan!',
   APP_VERSION: '1.0.0',
-  // API_URL: 'https://biologi.zyuna646.tech',
-  API_URL: 'https://3ae408638edc.ngrok-free.app',
+  API_URL: 'https://biologi.zyuna646.tech',
+  // API_URL: 'https://43197ad5a369.ngrok-free.app',
 
   GAME_THEME: {
     PRIMARY_COLOR: '#4CAF50', // Green for biology theme
