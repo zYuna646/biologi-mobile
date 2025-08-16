@@ -1,5 +1,6 @@
 export const Config = {
   APP_NAME: 'BIOREKA',
+  APP_NAME_DESC: 'Biologi Reproduksi dan Edukasi Kesehatan',
   APP_DESCRIPTION: 'Belajar Biologi dengan Cara yang Menyenangkan!',
   APP_VERSION: '1.0.0',
   API_URL: 'https://biologi.zyuna646.tech',

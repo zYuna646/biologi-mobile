@@ -3,17 +3,17 @@ import { QuestionCard } from '@/components/ui/QuestionCard';
 import { Config } from '@/constants/Config';
 import { Question, QuizService, QuizSession, SubmitAnswerRequest } from '@/utils/QuizService';
 import { UserService } from '@/utils/UserService';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    BackHandler,
-    Dimensions,
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    Text,
-    View,
+  ActivityIndicator,
+  Alert,
+  BackHandler,
+  Dimensions,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
 } from 'react-native';
 
 interface QuizScreenProps {
@@ -34,22 +34,14 @@ export const QuizScreen: React.FC<QuizScreenProps> = ({ onBack, onComplete }) =>
   const isSmallScreen = width < 700;
   const isTablet = width > 900;
 
-  useEffect(() => {
-    initializeQuiz();
-
-    // Handle Android back button
-    const backHandler = BackHandler.addEventListener('hardwareBackPress', handleBackPress);
-    
-    return () => backHandler.remove();
-  }, []);
-
-  const handleBackPress = (): boolean => {
-    showExitWarning();
-    return true; // Prevent default behavior
-  };
-
-  const showExitWarning = () => {
-    const answeredCount = getAnsweredCount();
+  const showExitWarning = useCallback(() => {
+    const answeredCount = questions.filter(q => {
+      const answer = answers[q.id];
+      if (q.question_type === 'PGK') {
+        return Array.isArray(answer) && answer.length > 0;
+      }
+      return Boolean(answer && answer.toString().trim().length > 0);
+    }).length;
     const hasAnswers = answeredCount > 0;
 
     Alert.alert(
@@ -66,15 +58,14 @@ export const QuizScreen: React.FC<QuizScreenProps> = ({ onBack, onComplete }) =>
           text: 'Keluar',
           style: 'destructive',
           onPress: () => {
-            // TODO: You might want to save incomplete session or clean up
             onBack();
           },
         },
       ]
     );
-  };
+  }, [answers, onBack, questions]);
 
-  const initializeQuiz = async () => {
+  const initializeQuiz = useCallback(async () => {
     try {
       setLoading(true);
 
@@ -119,7 +110,28 @@ export const QuizScreen: React.FC<QuizScreenProps> = ({ onBack, onComplete }) =>
     } finally {
       setLoading(false);
     }
-  };
+  }, [onBack]);
+
+  useEffect(() => {
+    initializeQuiz();
+  }, [initializeQuiz]);
+
+  // Rebind hardware back handler whenever the current index (or confirm dialog function) changes
+  useEffect(() => {
+    const onHardwareBack = (): boolean => {
+      if (currentQuestionIndex > 0) {
+        setCurrentQuestionIndex(prev => Math.max(0, prev - 1));
+        return true;
+      }
+      showExitWarning();
+      return true;
+    };
+
+    const backHandler = BackHandler.addEventListener('hardwareBackPress', onHardwareBack);
+    return () => backHandler.remove();
+  }, [currentQuestionIndex, showExitWarning]);
+
+  
 
   const handleAnswerChange = (questionId: number, answer: string | string[]) => {
     setAnswers(prev => ({
@@ -141,7 +153,11 @@ export const QuizScreen: React.FC<QuizScreenProps> = ({ onBack, onComplete }) =>
   };
 
   const handleBackButton = () => {
-    showExitWarning();
+    if (currentQuestionIndex > 0) {
+      handlePrevious();
+    } else {
+      showExitWarning();
+    }
   };
 
   const handleSubmitQuiz = async () => {
@@ -348,6 +364,7 @@ export const QuizScreen: React.FC<QuizScreenProps> = ({ onBack, onComplete }) =>
               onPress={handleNext}
               variant="primary"
               size={isTablet ? "medium" : "small"}
+              disabled={currentQuestionIndex === questions.length - 1}
             />
           )}
         </View>

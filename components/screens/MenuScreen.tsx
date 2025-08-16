@@ -3,6 +3,7 @@ import { Config } from '@/constants/Config';
 import React from 'react';
 import {
   Dimensions,
+  Linking,
   SafeAreaView,
   ScrollView,
   StyleSheet,
@@ -16,28 +17,38 @@ interface MenuScreenProps {
   onBack: () => void;
 }
 
-const { width, height } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
 const menuItems = [
   {
     id: 'play',
     title: 'Main',
     icon: '▶️',
+    color: '#FF7F50', // Coral Orange
   },
   {
     id: 'materi',
     title: 'Materi',
     icon: '📚',
+    color: '#2E8B57', // Sea Green
   },
   {
     id: 'assessment',
     title: 'Assessment',
     icon: '📝',
+    color: '#FFD700', // Goldenrod Yellow
   },
   {
     id: 'leaderboard',
     title: 'Papan Skor',
     icon: '🏆',
+    color: '#4169E1', // Royal Blue
+  },
+  {
+    id: 'lkpd',
+    title: 'LKPD',
+    icon: '📋',
+    color: '#9370DB', // Medium Purple
   },
 ];
 
@@ -45,6 +56,15 @@ export const MenuScreen: React.FC<MenuScreenProps> = ({ onTopicSelect, onBack })
   const isSmallScreen = width < 700;
   const isTablet = width > 900;
   
+  const handleTopicSelect = (topic: string) => {
+    if (topic === 'lkpd') {
+      // Open LKPD Google link
+      Linking.openURL('https://docs.google.com/document/d/1Zt3QZcRQQ5QZcRQQ5QZcRQQ5QZcRQQ5/edit?usp=sharing');
+      return;
+    }
+    onTopicSelect(topic);
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       {/* Menu Content */}
@@ -77,12 +97,13 @@ export const MenuScreen: React.FC<MenuScreenProps> = ({ onTopicSelect, onBack })
               <TouchableOpacity
                 key={item.id}
                 style={styles.menuItem}
-                onPress={() => onTopicSelect(item.id)}
+                onPress={() => handleTopicSelect(item.id)}
                 activeOpacity={0.7}
               >
                 <View style={[styles.iconContainer, {
                   width: isTablet ? 100 : isSmallScreen ? 60 : 80,
                   height: isTablet ? 100 : isSmallScreen ? 60 : 80,
+                  backgroundColor: item.color || Config.GAME_THEME.CARD_BACKGROUND,
                 }]}>
                   <Text style={[styles.menuIcon, {
                     fontSize: isTablet ? 40 : isSmallScreen ? 24 : 32

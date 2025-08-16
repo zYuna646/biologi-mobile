@@ -173,20 +173,22 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
           }]}>
             <Text style={[styles.logoEmoji, {
               fontSize: isTablet ? 80 : isSmallScreen ? 50 : 60,
-            }]}>🌱</Text>
+            }]}>🧬</Text>
           </View>
         </View>
+        
 
         {/* App Title */}
         <Text style={[styles.title, {
           fontSize: isTablet ? 40 : isSmallScreen ? 28 : 32,
           marginBottom: isSmallScreen ? 8 : 12,
         }]}>{Config.APP_NAME}</Text>
+        
         <Text style={[styles.subtitle, {
           fontSize: isTablet ? 24 : isSmallScreen ? 16 : 20,
           marginBottom: isTablet ? 40 : isSmallScreen ? 25 : 35,
         }]}>
-          {Config.APP_DESCRIPTION}
+          {Config.APP_NAME_DESC}
         </Text>
 
         {/* User Greeting */}
@@ -310,6 +312,7 @@ const styles = StyleSheet.create({
     color: Config.GAME_THEME.TEXT_SECONDARY,
     textAlign: 'center',
     lineHeight: 24,
+    fontWeight: 'bold',
   },
 
   buttonContainer: {
