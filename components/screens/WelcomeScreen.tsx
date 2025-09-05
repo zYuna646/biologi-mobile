@@ -7,6 +7,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import {
   Animated,
   Dimensions,
+  Image,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -171,9 +172,14 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
             height: isTablet ? 150 : isSmallScreen ? 100 : 120,
             borderRadius: isTablet ? 75 : isSmallScreen ? 50 : 60,
           }]}>
-            <Text style={[styles.logoEmoji, {
-              fontSize: isTablet ? 80 : isSmallScreen ? 50 : 60,
-            }]}>🧬</Text>
+            <Image 
+              source={require('@/assets/images/icon.png')} 
+              style={{
+                width: isTablet ? 120 : isSmallScreen ? 80 : 100,
+                height: isTablet ? 120 : isSmallScreen ? 80 : 100,
+                resizeMode: 'contain'
+              }}
+            />
           </View>
         </View>
         
@@ -299,9 +305,6 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 8,
   },
-  logoEmoji: {
-    // fontSize is handled inline
-  },
   title: {
     fontWeight: 'bold',
     color: Config.GAME_THEME.TEXT_PRIMARY,
@@ -376,4 +379,4 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 2,
   },
-}); 
+});

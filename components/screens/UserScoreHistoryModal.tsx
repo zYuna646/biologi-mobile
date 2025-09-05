@@ -4,14 +4,19 @@ import { UserScore, UserScoreService } from '@/utils/UserScoreService';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
     ActivityIndicator,
+    Alert,
     Dimensions,
     Modal,
+    Platform,
     ScrollView,
+    Share,
     StyleSheet,
     Text,
     TouchableOpacity,
     View
 } from 'react-native';
+import * as FileSystem from 'expo-file-system';
+import * as Sharing from 'expo-sharing';
 
 interface UserScoreHistoryModalProps {
   visible: boolean;
@@ -32,6 +37,65 @@ export const UserScoreHistoryModal: React.FC<UserScoreHistoryModalProps> = ({
     totalGames: 0,
     averageScore: 0,
   });
+  const [exportLoading, setExportLoading] = useState(false);
+  
+  // Function to export scores to Excel (CSV format)  
+  const handleExportToExcel = async () => {
+    if (!userScores || userScores.length === 0) {
+      Alert.alert('Peringatan', 'Tidak ada data skor untuk diunduh');
+      return;
+    }
+
+    try {
+      setExportLoading(true);
+      
+      // Create CSV content
+      let csvContent = 'No,Tanggal,Level,Skor\n';
+      
+      userScores.forEach((score, index) => {
+        const formattedDate = UserScoreService.formatDate(score.created_at);
+        csvContent += `${index + 1},"${formattedDate}",${score.level},${score.score}\n`;
+      });
+      
+      // Generate filename with current date
+      const date = new Date();
+      const formattedDate = date.toISOString().split('T')[0];
+      const fileName = `skor_biologi_${formattedDate}.csv`;
+      
+      if (Platform.OS === 'web') {
+        // For web, create a download link
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.setAttribute('href', url);
+        link.setAttribute('download', fileName);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } else {
+        // For mobile, save file and share
+        const fileUri = FileSystem.documentDirectory + fileName;
+        await FileSystem.writeAsStringAsync(fileUri, csvContent, {
+          encoding: FileSystem.EncodingType.UTF8
+        });
+        
+        // Langsung gunakan fileUri untuk semua platform
+        await Sharing.shareAsync(fileUri, {
+          mimeType: 'text/csv',
+          dialogTitle: 'Unduh Data Skor',
+          UTI: 'public.comma-separated-values-text'
+        });
+      }
+      
+      Alert.alert('Sukses', 'Data skor berhasil diunduh');
+    } catch (error) {
+      console.error('Error exporting scores:', error);
+      Alert.alert('Gagal', 'Terjadi kesalahan saat mengunduh data skor');
+    } finally {
+      setExportLoading(false);
+    }
+  };
 
   const isSmallScreen = width < 700;
   const isTablet = width > 900;
@@ -212,11 +276,24 @@ export const UserScoreHistoryModal: React.FC<UserScoreHistoryModalProps> = ({
         }]}>
           {/* Header */}
           <View style={styles.modalHeader}>
-            <Text style={[styles.modalTitle, {
-              fontSize: isTablet ? 24 : 20,
-            }]}>
-              📊 Riwayat Skor
-            </Text>
+            <View style={styles.headerLeft}>
+              <Text style={[styles.modalTitle, {
+                fontSize: isTablet ? 24 : 20,
+              }]}>
+                📊 Riwayat Skor
+              </Text>
+              {userScores && userScores.length > 0 && (
+                <TouchableOpacity 
+                  onPress={handleExportToExcel} 
+                  disabled={exportLoading}
+                  style={[styles.downloadButton, exportLoading && styles.downloadButtonDisabled]}
+                >
+                  <Text style={styles.downloadButtonText}>
+                    {exportLoading ? "Mengunduh..." : "📥 Excel"}
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </View>
             <TouchableOpacity onPress={onClose} style={styles.closeButton}>
               <Text style={[styles.closeButtonText, {
                 fontSize: isTablet ? 20 : 18,
@@ -224,10 +301,12 @@ export const UserScoreHistoryModal: React.FC<UserScoreHistoryModalProps> = ({
             </TouchableOpacity>
           </View>
 
+
+          
           {/* Stats Summary */}
           <View style={[styles.statsSummary, {
             marginHorizontal: isTablet ? 20 : 15,
-            marginVertical: isTablet ? 20 : 15,
+            marginVertical: isTablet ? 10 : 5,
             padding: isTablet ? 20 : 16,
           }]}>
             <View style={styles.statItem}>
@@ -291,6 +370,8 @@ export const UserScoreHistoryModal: React.FC<UserScoreHistoryModalProps> = ({
   );
 };
 
+
+
 const styles = StyleSheet.create({
   modalOverlay: {
     flex: 1,
@@ -316,6 +397,25 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: Config.GAME_THEME.BACKGROUND,
   },
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  downloadButton: {
+    backgroundColor: Config.GAME_THEME.PRIMARY_COLOR,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 15,
+    marginLeft: 10,
+  },
+  downloadButtonDisabled: {
+    opacity: 0.5,
+  },
+  downloadButtonText: {
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+    fontSize: 12,
+  },
   modalTitle: {
     fontWeight: 'bold',
     color: Config.GAME_THEME.TEXT_PRIMARY,
@@ -326,6 +426,7 @@ const styles = StyleSheet.create({
   closeButtonText: {
     color: Config.GAME_THEME.TEXT_SECONDARY,
   },
+
   statsSummary: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -425,4 +526,4 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 22,
   },
-}); 
+});
