@@ -56,14 +56,15 @@ export const MenuScreen: React.FC<MenuScreenProps> = ({ onTopicSelect, onBack })
   const isSmallScreen = width < 700;
   const isTablet = width > 900;
   
-  const handleTopicSelect = (topic: string) => {
-    if (topic === 'lkpd') {
-      // Open LKPD Google link
-      Linking.openURL('https://docs.google.com/document/d/1Zt3QZcRQQ5QZcRQQ5QZcRQQ5QZcRQQ5/edit?usp=sharing');
-      return;
-    }
-    onTopicSelect(topic);
-  };
+const handleTopicSelect = (topic: string) => {
+  if (topic === 'lkpd') {
+    // Open LKPD Google Drive link
+    Linking.openURL('https://drive.google.com/file/d/1xNIpJ34ZvG0aZkQXLYroiBhyh4YiPrxg/view?usp=sharing');
+    return;
+  }
+  onTopicSelect(topic);
+};
+
 
   return (
     <SafeAreaView style={styles.container}>
