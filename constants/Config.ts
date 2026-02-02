@@ -3,7 +3,7 @@ export const Config = {
   APP_NAME_DESC: "Biologi Reproduksi dan Edukasi Kesehatan",
   APP_DESCRIPTION: "Belajar Biologi dengan Cara yang Menyenangkan!",
   APP_VERSION: "1.0.0",
-  API_URL: "https://api.bioreka.nekoknights.com",
+  API_URL: "https://bioreka.nekoknights.com",
   // API_URL: 'https://43197ad5a369.ngrok-free.app',
 
   GAME_THEME: {
